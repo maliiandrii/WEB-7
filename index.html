@@ -78,12 +78,12 @@
 
                 const currentTime = new Date();
                 const event = {
-                    id: eventLog.length + 1,
-                    eventType: 'Boundary Collision',
+                    eventNumber: eventLog.length + 1,
+                    eventType: 'Animation start',
                     localTime: currentTime.toISOString(),
                 };
                 eventLog.push(event);
-                updateTable(eventLog);
+                updateTable(event, new Date());
 
                 messages.innerHTML = 'Animation started!';
             });
@@ -94,12 +94,12 @@
 
                 const currentTime = new Date();
                 const event = {
-                    id: eventLog.length + 1,
-                    eventType: 'Boundary Collision',
+                    eventNumber: eventLog.length + 1,
+                    eventType: 'Animation close',
                     localTime: currentTime.toISOString(),
                 };
                 eventLog.push(event);
-                updateTable(eventLog);
+                updateTable(event, new Date());
 
                 clearInterval(animationInterval);
                 messages.innerHTML = '';
@@ -111,12 +111,12 @@
 
                 const currentTime = new Date();
                 const event = {
-                    id: eventLog.length + 1,
-                    eventType: 'Boundary Collision',
+                    eventNumber: eventLog.length + 1,
+                    eventType: 'Animation stop',
                     localTime: currentTime.toISOString(),
                 };
                 eventLog.push(event);
-                updateTable(eventLog);
+                updateTable(event, new Date());
 
                 messages.innerHTML = 'Animation stopped.';
             });
@@ -128,12 +128,12 @@
 
                 const currentTime = new Date();
                 const event = {
-                    id: eventLog.length + 1,
-                    eventType: 'Boundary Collision',
+                    eventNumber: eventLog.length + 1,
+                    eventType: 'Animation reload',
                     localTime: currentTime.toISOString(),
                 };
                 eventLog.push(event);
-                updateTable(eventLog);
+                updateTable(event, new Date());
 
                 messages.innerHTML = 'Animation reset.';
             });
@@ -166,12 +166,12 @@
 
                     const currentTime = new Date();
                     const event = {
-                        id: eventLog.length + 1,
-                        eventType: 'Boundary Collision',
+                        eventNumber: eventLog.length + 1,
+                        eventType: 'Boundary collision',
                         localTime: currentTime.toISOString(),
                     };
                     eventLog.push(event);
-                    updateTable(eventLog);
+                    updateTable(event, new Date());
 
                     messages.innerHTML = 'Square has exited the bounds of the animation area.';
                     return;
@@ -190,6 +190,15 @@
                     dy = temp;
 
                     step = 0;
+
+                    const currentTime = new Date();
+                    const event = {
+                        eventNumber: eventLog.length + 1,
+                        eventType: 'Direction change',
+                        localTime: currentTime.toISOString(),
+                    };
+                    eventLog.push(event);
+                    updateTable(event, new Date());
                 }
             }
 
@@ -254,8 +263,8 @@
                 row.innerHTML = `
         <td>${event.eventNumber}</td>
         <td>${event.eventType}</td>
-        <td>${localTime.toLocaleString()}</td>
-        <td>${serverTimeDate.toLocaleString()}</td>
+        <td>${localTime}</td>
+        <td>${serverTimeDate}</td>
         <td>${serverTimeDate - localTime} ms</td>
     `;
 
