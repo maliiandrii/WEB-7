@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Example</title>
+    <link rel="stylesheet" href="style_grid.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sofadi+One&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="block block1">
+        <h1>It will never fracture, that much I`m sure of</h1>
+    </div>
+    <div class="block block2">
+        <ol>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="pages/page1.html">Page 1</a></li>
+            <li><a href="pages/page2.html">Page 2</a></li>
+            <li><a href="pages/page3.html">Page 3</a></li>
+            <li><a href="pages/page4.html">Page 4</a></li>
+            <li><a href="pages/page5.html">Page 5</a></li>
+        </ol>
+    </div>
+    <div class="block block3">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vulputate leo aliquam ligula commodo, non rutrum metus auctor. Sed quis blandit ante. Ut aliquam quam malesuada libero egestas scelerisque. Phasellus nulla quam, viverra et auctor consectetur, semper eu orci. Vivamus sit amet nisi feugiat, volutpat eros at, tristique urna. Vestibulum sed nisl sit amet diam luctus molestie. Cras malesuada dolor sed mi scelerisque gravida.</p>
+    </div>
+    <div class="block block4">
+       <div class="play-container">
+            <button id="play-button">Play</button>
+        </div>
+
+        <div class="work" id="work-area">
+            <div class="controls">
+                <div id="messages">Messages will appear here</div>
+                <button id="stop-button">Stop</button>
+                <button id="reload-button">Reload</button>
+                <button id="close-button">Close</button>
+            </div>
+            <div class="anim" id="anim-area">
+                <div class="blue-square" id="blue-square"></div>
+            </div>
+        </div>
+
+        <div id="log-table-container">
+            <table border="1" id="log-table">
+                <thead>
+                <tr>
+                    <th>Event Number</th>
+                    <th>Event Type</th>
+                    <th>Local Time</th>
+                    <th>Server Time</th>
+                    <th>Time Difference (ms)</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+
+        <script>
+            const playButton = document.getElementById('play-button');
+            const closeButton = document.getElementById('close-button');
+            const workArea = document.getElementById('work-area');
+            const blueSquare = document.getElementById('blue-square');
+            const animArea = document.getElementById('anim-area');
+            const messages = document.getElementById('messages');
+            const stopButton = document.getElementById('stop-button');
+            const reloadButton = document.getElementById('reload-button');
+
+            let animationInterval;
+
+            playButton.addEventListener('click', () => {
+                workArea.style.display = 'block';
+                playButton.style.display = 'none';
+                messages.innerHTML = 'Animation started!';
+            });
+
+            closeButton.addEventListener('click', () => {
+                workArea.style.display = 'none';
+                playButton.style.display = 'inline-block';
+                clearInterval(animationInterval);
+                messages.innerHTML = '';
+            });
+
+            stopButton.addEventListener('click', () => {
+                clearInterval(animationInterval);
+                playButton.style.display = 'inline-block';
+                messages.innerHTML = 'Animation stopped.';
+            });
+
+            reloadButton.addEventListener('click', () => {
+                clearInterval(animationInterval);
+                resetSquare();
+                playButton.style.display = 'inline-block';
+                messages.innerHTML = 'Animation reset.';
+            });
+
+            function resetSquare() {
+                blueSquare.style.left = '50%';
+                blueSquare.style.top = '50%';
+                dx = 1;
+                dy = 0;
+                step = 1;
+                path = 50;
+            }
+
+            let dx = 1;
+            let dy = 0;
+            let step = 1;
+            let path = 50;
+
+            function moveSquare() {
+                const squareRect = blueSquare.getBoundingClientRect();
+                const animRect = animArea.getBoundingClientRect();
+
+                if (
+                    squareRect.right + dx > animRect.right ||
+                    squareRect.left + dx < animRect.left ||
+                    squareRect.bottom + dy > animRect.bottom ||
+                    squareRect.top + dy < animRect.top
+                ) {
+                    clearInterval(animationInterval);
+                    messages.innerHTML = 'Square has exited the bounds of the animation area.';
+                    return;
+                }
+
+                blueSquare.style.left = `${blueSquare.offsetLeft + dx}px`;
+                blueSquare.style.top = `${blueSquare.offsetTop + dy}px`;
+
+                step++;
+
+                if (step >= path) {
+                    path += 10;
+
+                    const temp = dx;
+                    dx = -dy;
+                    dy = temp;
+
+                    step = 0;
+                }
+            }
+
+            document.getElementById('play-button').addEventListener('click', () => {
+                animationInterval = setInterval(moveSquare, 1);
+            });
+
+            const eventLog = [];
+            const serverUrl = 'server.php'; // Змінити на актуальну адресу вашого сервера
+
+            function logEvent(eventType) {
+                const event = {
+                    eventType,
+                    eventNumber: eventLog.length + 1,
+                    localTime: new Date().toISOString(),
+                };
+
+                // Додавання до локального логу
+                eventLog.push(event);
+
+                // Збереження в LocalStorage
+                localStorage.setItem('eventLog', JSON.stringify(eventLog));
+
+                // Відправлення на сервер негайно (перший спосіб)
+                fetch(serverUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(event),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log('Server Response:', data);
+                    })
+                    .catch((err) => console.error('Server Error:', err));
+            }
+
+            // Відправка всіх подій з LocalStorage (другий спосіб)
+            function sendAccumulatedEvents() {
+                const accumulatedEvents = JSON.parse(localStorage.getItem('eventLog')) || [];
+                fetch(serverUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ events: accumulatedEvents }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log('Accumulated Server Response:', data);
+                        localStorage.removeItem('eventLog'); // Очищення LocalStorage
+                    })
+                    .catch((err) => console.error('Accumulated Server Error:', err));
+            }
+
+            // Логування подій (наприклад, для кнопок)
+            playButton.addEventListener('click', () => logEvent('play'));
+            stopButton.addEventListener('click', () => logEvent('stop'));
+            reloadButton.addEventListener('click', () => logEvent('reload'));
+            closeButton.addEventListener('click', () => logEvent('close'));
+
+            // Відправлення всіх подій з LocalStorage при закритті сторінки
+            window.addEventListener('beforeunload', sendAccumulatedEvents);
+
+            function updateLogTable(event, serverTime) {
+                const tableBody = document.querySelector('#log-table tbody');
+                const row = document.createElement('tr');
+                const localTime = new Date(event.localTime);
+                const serverTimeDate = new Date(serverTime);
+
+                row.innerHTML = `
+        <td>${event.eventNumber}</td>
+        <td>${event.eventType}</td>
+        <td>${localTime.toLocaleString()}</td>
+        <td>${serverTimeDate.toLocaleString()}</td>
+        <td>${serverTimeDate - localTime} ms</td>
+    `;
+
+                tableBody.appendChild(row);
+            }
+
+        </script>
+    </div>
+    <div class="block block5">
+        <p>Suspendisse porttitor porttitor turpis at vulputate. Sed elementum sit amet nisi sed commodo. Fusce fermentum feugiat venenatis. In non feugiat tellus. Proin consequat a enim a interdum. Nulla sollicitudin dolor nisi. Vestibulum posuere auctor bibendum. Ut quis cursus nunc, eget semper neque. Nullam eu libero id urna placerat lacinia.</p>
+    </div>
+    <div class="block block6">
+        <h1>Not even if the word were turned upside down</h1>
+    </div>
+</div>
+</body>
+</html>
