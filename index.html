@@ -75,12 +75,32 @@
             playButton.addEventListener('click', () => {
                 workArea.style.display = 'block';
                 playButton.style.display = 'none';
+
+                const currentTime = new Date();
+                const event = {
+                    id: eventLog.length + 1,
+                    eventType: 'Boundary Collision',
+                    localTime: currentTime.toISOString(),
+                };
+                eventLog.push(event);
+                updateTable(eventLog);
+
                 messages.innerHTML = 'Animation started!';
             });
 
             closeButton.addEventListener('click', () => {
                 workArea.style.display = 'none';
                 playButton.style.display = 'inline-block';
+
+                const currentTime = new Date();
+                const event = {
+                    id: eventLog.length + 1,
+                    eventType: 'Boundary Collision',
+                    localTime: currentTime.toISOString(),
+                };
+                eventLog.push(event);
+                updateTable(eventLog);
+
                 clearInterval(animationInterval);
                 messages.innerHTML = '';
             });
@@ -88,6 +108,16 @@
             stopButton.addEventListener('click', () => {
                 clearInterval(animationInterval);
                 playButton.style.display = 'inline-block';
+
+                const currentTime = new Date();
+                const event = {
+                    id: eventLog.length + 1,
+                    eventType: 'Boundary Collision',
+                    localTime: currentTime.toISOString(),
+                };
+                eventLog.push(event);
+                updateTable(eventLog);
+
                 messages.innerHTML = 'Animation stopped.';
             });
 
@@ -95,6 +125,16 @@
                 clearInterval(animationInterval);
                 resetSquare();
                 playButton.style.display = 'inline-block';
+
+                const currentTime = new Date();
+                const event = {
+                    id: eventLog.length + 1,
+                    eventType: 'Boundary Collision',
+                    localTime: currentTime.toISOString(),
+                };
+                eventLog.push(event);
+                updateTable(eventLog);
+
                 messages.innerHTML = 'Animation reset.';
             });
 
@@ -123,6 +163,16 @@
                     squareRect.top + dy < animRect.top
                 ) {
                     clearInterval(animationInterval);
+
+                    const currentTime = new Date();
+                    const event = {
+                        id: eventLog.length + 1,
+                        eventType: 'Boundary Collision',
+                        localTime: currentTime.toISOString(),
+                    };
+                    eventLog.push(event);
+                    updateTable(eventLog);
+
                     messages.innerHTML = 'Square has exited the bounds of the animation area.';
                     return;
                 }
@@ -148,7 +198,7 @@
             });
 
             const eventLog = [];
-            const serverUrl = 'server.php'; // Змінити на актуальну адресу вашого сервера
+            const serverUrl = 'server.php';
 
             function logEvent(eventType) {
                 const event = {
@@ -157,13 +207,10 @@
                     localTime: new Date().toISOString(),
                 };
 
-                // Додавання до локального логу
                 eventLog.push(event);
 
-                // Збереження в LocalStorage
                 localStorage.setItem('eventLog', JSON.stringify(eventLog));
 
-                // Відправлення на сервер негайно (перший спосіб)
                 fetch(serverUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -176,7 +223,6 @@
                     .catch((err) => console.error('Server Error:', err));
             }
 
-            // Відправка всіх подій з LocalStorage (другий спосіб)
             function sendAccumulatedEvents() {
                 const accumulatedEvents = JSON.parse(localStorage.getItem('eventLog')) || [];
                 fetch(serverUrl, {
@@ -187,21 +233,19 @@
                     .then((response) => response.json())
                     .then((data) => {
                         console.log('Accumulated Server Response:', data);
-                        localStorage.removeItem('eventLog'); // Очищення LocalStorage
+                        localStorage.removeItem('eventLog');
                     })
                     .catch((err) => console.error('Accumulated Server Error:', err));
             }
 
-            // Логування подій (наприклад, для кнопок)
             playButton.addEventListener('click', () => logEvent('play'));
             stopButton.addEventListener('click', () => logEvent('stop'));
             reloadButton.addEventListener('click', () => logEvent('reload'));
             closeButton.addEventListener('click', () => logEvent('close'));
 
-            // Відправлення всіх подій з LocalStorage при закритті сторінки
             window.addEventListener('beforeunload', sendAccumulatedEvents);
 
-            function updateLogTable(event, serverTime) {
+            function updateTable(event, serverTime) {
                 const tableBody = document.querySelector('#log-table tbody');
                 const row = document.createElement('tr');
                 const localTime = new Date(event.localTime);
